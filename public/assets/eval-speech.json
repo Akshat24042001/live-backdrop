@@ -1,0 +1,130 @@
+[
+  {
+    "i": 0,
+    "startsAtMs": 1000,
+    "endsAtMs": 6376,
+    "lang": "hi",
+    "text": "आदरणीय मंच, सभी अतिथिगण और मेरे प्यारे साथियों, आप सबको जय जिनेन्द्र।",
+    "expect": "none"
+  },
+  {
+    "i": 1,
+    "startsAtMs": 7376,
+    "endsAtMs": 12581,
+    "lang": "en",
+    "text": "Before I begin, I want to thank the Bhavnagar team for this wonderful arrangement.",
+    "expect": "none"
+  },
+  {
+    "i": 2,
+    "startsAtMs": 13981,
+    "endsAtMs": 18675,
+    "lang": "hi",
+    "text": "जब हमने जीतो की शुरुआत की थी, तब हमारे पास सिर्फ़ ग्यारह सदस्य थे।",
+    "expect": "stat setup"
+  },
+  {
+    "i": 3,
+    "startsAtMs": 20475,
+    "endsAtMs": 25509,
+    "lang": "hi",
+    "text": "आज देश भर में बहत्तर हज़ार से ज़्यादा सदस्य हैं और छियासठ चैप्टर हैं।",
+    "expect": "stat: 72,000 members, 66 chapters"
+  },
+  {
+    "i": 4,
+    "startsAtMs": 26509,
+    "endsAtMs": 29837,
+    "lang": "gu",
+    "text": "આ સંખ્યા નથી, આ આપણા સમાજનો વિશ્વાસ છે.",
+    "expect": "quote: not a number, it is trust"
+  },
+  {
+    "i": 5,
+    "startsAtMs": 31237,
+    "endsAtMs": 37381,
+    "lang": "en",
+    "text": "In business, your balance sheet shows what you own, but your character shows who you are.",
+    "expect": "quote"
+  },
+  {
+    "i": 6,
+    "startsAtMs": 39181,
+    "endsAtMs": 43960,
+    "lang": "hi",
+    "text": "मैं युवाओं से कहना चाहता हूँ कि जल्दी अमीर बनने का कोई शॉर्टकट नहीं होता।",
+    "expect": "quote: no shortcut to getting rich"
+  },
+  {
+    "i": 7,
+    "startsAtMs": 44960,
+    "endsAtMs": 48374,
+    "lang": "hi",
+    "text": "शॉर्टकट से आप जल्दी पहुँचते हैं, लेकिन टिकते नहीं।",
+    "expect": "update or quote"
+  },
+  {
+    "i": 8,
+    "startsAtMs": 49774,
+    "endsAtMs": 56003,
+    "lang": "gu",
+    "text": "ગયા વર્ષે આપણે બારસો વિદ્યાર્થીઓને શિષ્યવૃત્તિ આપી, અને આ વર્ષે લક્ષ્ય પાંચ હજાર છે.",
+    "expect": "stat: 1,200 to 5,000 scholarships"
+  },
+  {
+    "i": 9,
+    "startsAtMs": 57803,
+    "endsAtMs": 61728,
+    "lang": "en",
+    "text": "Education is the only investment that never loses value.",
+    "expect": "quote"
+  },
+  {
+    "i": 10,
+    "startsAtMs": 62728,
+    "endsAtMs": 68360,
+    "lang": "hi",
+    "text": "और एक बात याद रखिए, सेवा, सेवा, सेवा। यही हमारी पहचान है।",
+    "expect": "keyword: seva"
+  },
+  {
+    "i": 11,
+    "startsAtMs": 69760,
+    "endsAtMs": 74966,
+    "lang": "hi",
+    "text": "कृपया सभी अपना मोबाइल साइलेंट पर रखें, कार्यक्रम के बाद भोजन की व्यवस्था है।",
+    "expect": "none (MC)"
+  },
+  {
+    "i": 12,
+    "startsAtMs": 76766,
+    "endsAtMs": 82568,
+    "lang": "en",
+    "text": "Our women entrepreneurs grew their businesses by forty percent in just two years.",
+    "expect": "stat: 40% in 2 years"
+  },
+  {
+    "i": 13,
+    "startsAtMs": 83568,
+    "endsAtMs": 86982,
+    "lang": "gu",
+    "text": "દીકરીઓને ભણાવો, તો આખું કુટુંબ આગળ વધે છે.",
+    "expect": "quote/takeaway"
+  },
+  {
+    "i": 14,
+    "startsAtMs": 88382,
+    "endsAtMs": 95123,
+    "lang": "hi",
+    "text": "तो मेरा आप सबसे आग्रह है, कमाइए ईमानदारी से, खर्च कीजिए समझदारी से, और बाँटिए दिल से।",
+    "expect": "takeaway: all three parts"
+  },
+  {
+    "i": 15,
+    "startsAtMs": 96923,
+    "endsAtMs": 98288,
+    "lang": "hi",
+    "text": "बहुत बहुत धन्यवाद।",
+    "expect": "none"
+  }
+]

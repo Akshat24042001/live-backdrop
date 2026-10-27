@@ -1,0 +1,1109 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Operator Panel</title>
+<style>
+  :root { --bg:#0b0e1a; --panel:#12162a; --panel2:#171c34; --line:#232a4d; --ink:#e8ebf7; --muted:#8d95b8; --pri:#4f6bff; --go:#1d9a5b; --stop:#c23a50; --warn:#d99a1e; --accent:#ffb020; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; background: var(--bg); color: var(--ink); font: 14px/1.45 system-ui, 'Segoe UI', 'Nirmala UI', sans-serif; }
+  a { color: #9db0ff; }
+  .app { display: grid; grid-template-columns: 200px 1fr; min-height: 100vh; }
+  nav { background: var(--panel); border-right: 1px solid var(--line); padding: 14px 10px; position: sticky; top: 0; height: 100vh; display: flex; flex-direction: column; gap: 4px; }
+  nav .brand { font-weight: 800; letter-spacing: .06em; padding: 4px 10px 14px; font-size: 13px; }
+  nav .brand span { color: var(--accent); }
+  nav button { text-align: left; background: transparent; color: var(--muted); padding: 10px 12px; border-radius: 8px; font-weight: 600; }
+  nav button.on { background: var(--panel2); color: #fff; box-shadow: inset 3px 0 0 var(--accent); }
+  nav .grow { flex: 1; }
+  nav .keys { color: var(--muted); font-size: 11px; padding: 8px 10px; line-height: 1.7; }
+  kbd { background: #222947; border-radius: 4px; padding: 0 5px; font: 11px ui-monospace, monospace; color: #cfd6ff; }
+  main { padding: 16px 20px 60px; max-width: 1100px; width: 100%; }
+  section.tab { display: none; } section.tab.on { display: block; }
+  h2 { font-size: 11px; text-transform: uppercase; letter-spacing: .14em; color: var(--muted); margin: 22px 0 8px; font-weight: 700; }
+  h2:first-child { margin-top: 4px; }
+  .row { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+  .cols { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+  .grid3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+  .grid2 { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .box { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; }
+  .chip { padding: 4px 10px; border-radius: 99px; background: #1b2038; font-size: 12px; font-weight: 600; white-space: nowrap; }
+  .ok { background: #12351f; color: #6ff0a0; } .bad { background: #3b1620; color: #ff8a9a; } .warn { background: #3a2f10; color: #ffd36a; } .info { background: #1a2550; color: #a9b8ff; }
+  button { font: inherit; border: 0; border-radius: 9px; padding: 10px 14px; background: #2a3158; color: #fff; cursor: pointer; font-weight: 600; }
+  button:hover { filter: brightness(1.12); } button:disabled { opacity: .45; cursor: default; }
+  button.go { background: var(--go); } button.stop { background: var(--stop); } button.pri { background: var(--pri); } button.ghost { background: transparent; border: 1px solid var(--line); color: var(--muted); }
+  button.big { padding: 16px 22px; font-size: 17px; font-weight: 800; }
+  button.sm { padding: 6px 10px; font-size: 12px; }
+  input[type=text], input[type=password], input[type=number], input[type=url], textarea, select { width: 100%; font: inherit; padding: 9px 10px; border-radius: 8px; border: 1px solid var(--line); background: #0f1328; color: #fff; }
+  input:focus, textarea:focus, select:focus { outline: 2px solid var(--pri); outline-offset: -1px; }
+  textarea { min-height: 64px; resize: vertical; }
+  input[type=range] { width: 100%; accent-color: var(--accent); }
+  input[type=color] { width: 44px; height: 34px; border: 1px solid var(--line); border-radius: 8px; background: #0f1328; padding: 2px; }
+  label.f { display: block; font-size: 12px; color: var(--muted); margin: 10px 0 4px; font-weight: 600; }
+  .hint { color: var(--muted); font-size: 12px; margin-top: 4px; }
+  .sw { display: flex; align-items: center; gap: 12px; padding: 10px 12px; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; cursor: pointer; user-select: none; }
+  .sw input { display: none; }
+  .sw .t { width: 42px; height: 24px; border-radius: 99px; background: #2a3158; position: relative; flex: none; transition: background .2s; }
+  .sw .t::after { content: ''; position: absolute; left: 3px; top: 3px; width: 18px; height: 18px; border-radius: 50%; background: #fff; transition: transform .2s; }
+  .sw input:checked + .t { background: var(--go); } .sw input:checked + .t::after { transform: translateX(18px); }
+  .sw b { display: block; } .sw small { color: var(--muted); }
+  .item { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; display: flex; gap: 8px; align-items: center; }
+  .item .t { font-size: 19px; font-weight: 700; flex: 1; min-width: 0; overflow-wrap: anywhere; }
+  .item .t .kw { color: var(--accent); }
+  .item .meta { color: var(--muted); font-size: 11px; font-weight: 600; white-space: nowrap; }
+  .item.pend { border: 2px solid var(--accent); }
+  .item input { font-size: 17px; font-weight: 700; }
+  .heard { background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 12px; min-height: 76px; color: #b9c0e0; font-size: 15px; max-height: 160px; overflow: auto; }
+  .heard i { color: #6b7399; }
+  .meter { height: 10px; background: #1b2038; border-radius: 6px; overflow: hidden; flex: 1; min-width: 120px; position: relative; }
+  .meter i { position: absolute; inset: 0 auto 0 0; width: 0; background: linear-gradient(90deg, #35e08a 0 70%, #ffd36a 70% 88%, #ff5d73 88%); transition: width .07s; }
+  .empty { color: #6b7399; padding: 8px 2px; }
+  .themes { display: grid; grid-template-columns: repeat(auto-fill, minmax(110px, 1fr)); gap: 8px; }
+  .themes button { height: 64px; border-radius: 10px; font-size: 12px; text-align: left; padding: 8px; display: flex; align-items: flex-end; border: 2px solid transparent; }
+  .themes button.on { border-color: #fff; }
+  .seg { display: inline-flex; background: #0f1328; border: 1px solid var(--line); border-radius: 10px; padding: 3px; flex-wrap: wrap; }
+  .seg button { background: transparent; color: var(--muted); padding: 7px 12px; border-radius: 7px; }
+  .seg button.on { background: var(--pri); color: #fff; }
+  .preview { position: relative; width: 100%; aspect-ratio: 16/9; border-radius: 12px; overflow: hidden; border: 1px solid var(--line); background: #000; }
+  .preview iframe { position: absolute; left: 0; top: 0; width: 1920px; height: 1080px; border: 0; transform-origin: 0 0; pointer-events: none; }
+  .preview .tag { position: absolute; left: 8px; top: 8px; font-size: 10px; font-weight: 800; letter-spacing: .1em; background: rgba(0,0,0,.6); padding: 3px 7px; border-radius: 5px; color: #fff; }
+  .toasts { position: fixed; right: 14px; bottom: 14px; display: flex; flex-direction: column; gap: 8px; z-index: 99; max-width: min(420px, 90vw); }
+  .toasts div { padding: 10px 14px; border-radius: 10px; font-weight: 600; box-shadow: 0 10px 30px rgba(0,0,0,.4); animation: tin .25s; }
+  @keyframes tin { from { transform: translateY(10px); opacity: 0; } }
+  .keyset { display: flex; gap: 8px; } .keyset input { flex: 1; }
+  .keyrow:not(:empty) { margin-top: 10px; }
+  .box > div + div { margin-top: 0; }
+  .dim { opacity: .5; pointer-events: none; }
+  .warnbox { background: #2e2410; border: 1px solid #5a4416; color: #ffd98a; padding: 10px 12px; border-radius: 10px; font-size: 13px; }
+  .script { margin: 12px 0 0; padding-left: 22px; font-size: 16px; line-height: 1.6; }
+  .script li { padding: 4px 0; } .script li small { color: var(--muted); display: block; font-size: 12px; }
+  body.reading .script { font-size: 20px; } body.reading .script li { padding: 8px 0; }
+  .report table { width: 100%; border-collapse: collapse; margin-top: 10px; font-size: 13px; }
+  .report td, .report th { text-align: left; padding: 7px 8px; border-bottom: 1px solid var(--line); vertical-align: top; }
+  .report th { color: var(--muted); font-size: 11px; text-transform: uppercase; letter-spacing: .08em; }
+  .report .hl { font-weight: 700; font-size: 15px; }
+  /* speakers tab */
+  .stagebar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; background: var(--panel); border: 1px solid var(--line); border-radius: 12px; padding: 10px 12px; }
+  .stagebar .lbl { font-size: 11px; text-transform: uppercase; letter-spacing: .14em; color: var(--muted); font-weight: 700; }
+  .onstage { display: flex; align-items: center; gap: 10px; flex: 1; min-width: 200px; font-weight: 800; font-size: 17px; }
+  .onstage img { width: 40px; height: 50px; object-fit: cover; border-radius: 6px; }
+  .onstage small { display: block; font-weight: 500; font-size: 12px; color: var(--muted); }
+  .sp-layout { display: grid; grid-template-columns: 1fr 340px; gap: 16px; }
+  .spgrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(165px, 1fr)); gap: 10px; max-height: calc(100vh - 200px); overflow: auto; padding: 2px; }
+  .spcard { background: var(--panel); border: 2px solid var(--line); border-radius: 12px; overflow: hidden; display: flex; flex-direction: column; }
+  .spcard.on { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,176,32,.2); }
+  .spcard .pic { position: relative; aspect-ratio: 4 / 4.2; background: #1b2038; cursor: pointer; display: flex; align-items: center; justify-content: center; color: var(--muted); font-size: 12px; }
+  .spcard .pic img { width: 100%; height: 100%; object-fit: cover; object-position: 50% 22%; }
+  .spcard .pic .badge { position: absolute; left: 6px; top: 6px; background: var(--accent); color: #1b1300; font-size: 10px; font-weight: 800; padding: 2px 7px; border-radius: 5px; letter-spacing: .06em; }
+  .spcard .pic .num { position: absolute; right: 6px; top: 6px; background: rgba(0,0,0,.6); color: #fff; font-size: 11px; font-weight: 700; padding: 1px 7px; border-radius: 5px; }
+  .spcard .nm { padding: 7px 8px 2px; font-weight: 800; font-size: 14px; line-height: 1.2; }
+  .spcard .rl { padding: 0 8px; font-size: 11px; color: var(--muted); min-height: 15px; line-height: 1.3; }
+  .spcard .acts { display: flex; gap: 4px; padding: 7px 6px; flex-wrap: wrap; margin-top: auto; }
+  .spcard .acts button { padding: 5px 7px; font-size: 11px; }
+  .spcard.add { align-items: center; justify-content: center; min-height: 200px; cursor: pointer; border-style: dashed; color: var(--muted); font-weight: 700; }
+  .spform-photo { display: flex; gap: 10px; align-items: flex-start; margin-top: 4px; }
+  .spform-photo .ph { width: 84px; height: 104px; border-radius: 10px; border: 2px dashed var(--line); display: flex; align-items: center; justify-content: center; cursor: pointer; overflow: hidden; color: var(--muted); font-size: 12px; flex: none; margin-top: 10px; }
+  .spform-photo .ph img { width: 100%; height: 100%; object-fit: cover; display: none; }
+  .sw.slim { padding: 4px 0; background: none; border: 0; }
+  #tab-speakers .box { padding: 10px 12px; }
+  #tab-speakers label.f { margin: 6px 0 3px; }
+  #tab-speakers h2 { margin: 12px 0 6px; }
+  .stagebar button { padding: 8px 12px; }
+  .logorow { display: flex; gap: 10px; align-items: flex-end; }
+  .logorow img { width: 56px; height: 38px; object-fit: contain; background: #f4ead9; border-radius: 6px; padding: 3px; }
+  @media (max-width: 1000px) { .sp-layout { grid-template-columns: 1fr; } .spgrid { max-height: none; } }
+  body.embed .sp-layout { grid-template-columns: 1fr; }
+  #tab-live h2 { margin: 12px 0 6px; } #tab-live .heard { min-height: 50px; max-height: 110px; } #tab-live .sw { padding: 8px 12px; }
+  .live-dot { width: 10px; height: 10px; border-radius: 50%; background: #ff3b5c; box-shadow: 0 0 0 0 rgba(255,59,92,.6); animation: lp 1.4s infinite; display: inline-block; }
+  @keyframes lp { 70% { box-shadow: 0 0 0 10px rgba(255,59,92,0); } }
+
+  /* embedded inside the backdrop drawer, and small screens */
+  body.embed .app, .app.narrow { grid-template-columns: 1fr; }
+  body.embed nav { position: sticky; top: 0; z-index: 5; height: auto; flex-direction: row; overflow-x: auto; padding: 6px; border-right: 0; border-bottom: 1px solid var(--line); }
+  body.embed nav .brand, body.embed nav .grow, body.embed nav .keys, body.embed .hide-embed { display: none !important; }
+  body.embed nav button { white-space: nowrap; padding: 8px 10px; }
+  body.embed main { padding: 12px; }
+  body.embed .cols, body.embed .grid3 { grid-template-columns: 1fr; }
+  @media (max-width: 760px) {
+    .app { grid-template-columns: 1fr; }
+    nav { position: sticky; top: 0; z-index: 5; height: auto; flex-direction: row; overflow-x: auto; padding: 6px; border-right: 0; border-bottom: 1px solid var(--line); }
+    nav .brand, nav .grow, nav .keys { display: none; }
+    nav button { white-space: nowrap; }
+    main { padding: 12px; }
+    .cols, .grid3 { grid-template-columns: 1fr; }
+  }
+</style>
+</head>
+<body>
+<div class="app">
+  <nav id="nav">
+    <div class="brand">LIVE <span>BACKDROP</span></div>
+    <button data-tab="live" class="on">● Live</button>
+    <button data-tab="speakers">Speakers</button>
+    <button data-tab="event">Event</button>
+    <button data-tab="look">Look</button>
+    <button data-tab="audio">Audio</button>
+    <button data-tab="engines">Engines &amp; keys</button>
+    <button data-tab="rehearse">Rehearsal</button>
+    <div class="grow"></div>
+    <div class="keys"><kbd>A</kbd> approve · <kbd>R</kbd> reject<br><kbd>C</kbd> clear screen<br><kbd>P</kbd> pause · <kbd>B</kbd> standby</div>
+  </nav>
+
+  <main>
+    <div class="row" id="chips" style="margin-bottom:6px"></div>
+
+    <!-- ================= LIVE ================= -->
+    <section class="tab on" id="tab-live">
+      <div class="cols">
+        <div>
+          <h2>Listening</h2>
+          <div class="row">
+            <button class="go big" id="btnStart">🎙 Start listening</button>
+            <button class="stop big" id="btnStop" hidden>■ Stop listening</button>
+            <div class="meter"><i class="lvl"></i></div>
+          </div>
+          <div class="hint" id="listenHint"></div>
+
+          <h2>On stage</h2>
+          <div class="row" id="stageSpeakers"></div>
+          <h2>Quick controls</h2>
+          <div class="grid2">
+            <label class="sw"><input type="checkbox" data-s="approveMode"><span class="t"></span><span><b>Approve mode</b><small>AI proposes, you approve</small></span></label>
+            <label class="sw"><input type="checkbox" data-s="paused"><span class="t"></span><span><b>Pause highlights</b><small>Host talk, anthem, breaks</small></span></label>
+            <label class="sw"><input type="checkbox" data-s="standby"><span class="t"></span><span><b>Standby screen</b><small>Title only, no highlights</small></span></label>
+            <label class="sw"><input type="checkbox" data-s="showCaptions"><span class="t"></span><span><b>Live captions</b><small>Words at the bottom</small></span></label>
+            <label class="sw"><input type="checkbox" data-s="showLock"><span class="t"></span><span><b>Show lock</b><small>Event is live: tests, demo and setup tools off</small></span></label>
+            <label class="sw"><input type="checkbox" data-s="showMoney"><span class="t"></span><span><b>Show money amounts</b><small>Off = no ₹ / crore / lakh lines</small></span></label>
+            <label class="sw"><input type="checkbox" data-s="allowHumor"><span class="t"></span><span><b>Show humour lines</b><small>Speaker's own light lines</small></span></label>
+          </div>
+          <div class="row" style="margin-top:10px">
+            <button class="stop" id="btnClear">Clear screen (C)</button>
+            <button class="ghost hide-embed" id="btnOpenDisplay">Open backdrop on 2nd screen</button>
+            <button class="ghost" id="btnIdentify">Identify screens</button>
+            <button class="ghost" id="btnGoTest">1-minute test</button>
+          </div>
+          <div class="row" style="margin-top:8px"><span class="hint" id="memory" style="margin:0"></span><button class="ghost sm" id="btnForget" title="Let earlier lines be shown again">Forget</button></div>
+        </div>
+        <div class="hide-embed">
+          <h2>Backdrop preview</h2>
+          <div class="preview" id="pv1"><iframe data-src="/display?preview=1" title="Backdrop preview"></iframe><span class="tag">PREVIEW</span></div>
+        </div>
+      </div>
+
+      <div class="cols">
+        <div>
+          <h2>On screen now</h2>
+          <div id="live"></div>
+          <div class="row" style="margin-top:6px"><input type="text" id="manual" placeholder="Type your own highlight and press Enter" style="flex:1"><button class="pri" id="btnManual">Show now</button></div>
+          <h2>Waiting for approval <span style="text-transform:none;letter-spacing:0">(<kbd>A</kbd> approve, <kbd>R</kbd> reject)</span></h2>
+          <div id="pending"></div>
+        </div>
+        <div>
+          <h2>Heard right now</h2>
+          <div class="heard" id="heard"><i>Nothing yet.</i></div>
+          <h2>Earlier highlights (click to show again)</h2>
+          <div id="history" class="row" style="max-height:120px;overflow:auto"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= SPEAKERS ================= -->
+    <section class="tab" id="tab-speakers">
+      <div class="stagebar">
+        <span class="lbl">On stage</span>
+        <div id="onStage" class="onstage"></div>
+        <button id="spPrev" title="Previous speaker in the running order">◀ Previous</button>
+        <button class="go" id="spNext" title="Next speaker in the running order">Next ▶</button>
+        <button class="ghost" id="spOff" title="Nobody on stage: photo and name go off the backdrop">Off stage</button>
+      </div>
+      <div class="sp-layout">
+        <div>
+          <h2>Running order <span class="meta" style="text-transform:none;letter-spacing:0">· click a photo to put that speaker on stage</span></h2>
+          <div class="spgrid" id="roster"></div>
+        </div>
+        <div>
+          <div class="box" id="spForm">
+            <b id="spFormTitle">Add a speaker</b>
+            <div class="spform-photo">
+              <div class="ph" id="spPhotoBox" title="Choose a photo"><img id="spPhotoPreview" alt=""><span id="spPhotoHint">+ Photo</span></div>
+              <div style="flex:1">
+                <label class="f">Name</label><input type="text" id="spName" placeholder="e.g. Shri Pankaj Bhayani">
+                <label class="f">Role / designation</label><input type="text" id="spRole" placeholder="e.g. Chairman, JITO Bhavnagar">
+              </div>
+            </div>
+            <label class="f">Talk topic (optional)</label><input type="text" id="spTopic" placeholder="helps recognition and picks">
+            <label class="f">Special names and words (optional, comma separated)</label><input type="text" id="spTerms" placeholder="company names, places, family names">
+            <label class="f">About (background for the AI only, never shown)</label><textarea id="spAbout" style="min-height:44px" placeholder="company, causes, style: helps the AI understand references"></textarea>
+            <input type="file" id="spPhotoFile" accept="image/*" hidden>
+            <div class="row" style="margin-top:10px"><button class="pri" id="spSave">Save speaker</button><button class="ghost" id="spCancel" hidden>Cancel</button></div>
+          </div>
+          <div class="box" style="margin-top:10px">
+            <b>Photo on the backdrop</b>
+            <label class="sw slim"><input type="checkbox" data-s="showPhoto"><span class="t"></span><span><b>Show speaker photo</b></span></label>
+            <label class="sw slim"><input type="checkbox" data-s="clearOnSpeakerChange"><span class="t"></span><span><b>Clear highlights on speaker change</b></span></label>
+            <div class="row" style="margin-top:8px"><span class="meta">Photo side</span><div class="seg" data-seg="photoSide"><button data-v="left">Left</button><button data-v="right">Right</button></div></div>
+            <label class="f">Width for highlights: <span id="tsv"></span></label><input type="range" min="50" max="80" step="1" data-s="textShare">
+          </div>
+        </div>
+      </div>
+      <input type="file" id="cardPhotoFile" accept="image/*" hidden>
+    </section>
+
+    <!-- ================= EVENT ================= -->
+    <section class="tab" id="tab-event">
+      <h2>Event preset <span class="meta" style="text-transform:none;letter-spacing:0">· one click sets the look, titles, logos and recognition names</span></h2>
+      <div class="row" id="presets"></div>
+      <div class="cols" style="margin-top:6px">
+        <div>
+          <h2>Titles</h2>
+          <label class="f">Event title</label><input type="text" data-s="eventTitle">
+          <label class="f">Tagline (under the title)</label><input type="text" data-s="eventTagline">
+          <label class="f">Standby screen text</label><input type="text" data-s="standbyText" placeholder="Welcome">
+          <label class="f">What the event is about (read by the AI and recognition)</label><textarea data-s="eventContext" style="min-height:76px"></textarea>
+        </div>
+        <div>
+          <h2>Logos</h2>
+          <div class="logorow"><img data-logo="logoLeft" alt=""><div style="flex:1"><label class="f">Left</label><input type="text" data-s="logoLeft" placeholder="/assets/jito-emblem.png"></div></div>
+          <div class="logorow"><img data-logo="logoUrl" alt=""><div style="flex:1"><label class="f">Centre</label><input type="text" data-s="logoUrl" placeholder="/assets/navyoday.png"></div></div>
+          <div class="logorow"><img data-logo="logoRight" alt=""><div style="flex:1"><label class="f">Right</label><input type="text" data-s="logoRight" placeholder="/assets/jito-wings.png"></div></div>
+          <h2>Words</h2>
+          <label class="f">Names and special words for the whole event</label><textarea data-s="terms" style="min-height:52px" placeholder="JITO, Bhavnagar, Navkar…"></textarea>
+          <label class="f">Blocked words (never shown)</label><textarea data-s="blocklist" style="min-height:40px"></textarea>
+        </div>
+      </div>
+    </section>
+
+    <!-- ================= LOOK ================= -->
+    <section class="tab" id="tab-look">
+      <div class="cols">
+        <div>
+          <h2>Theme</h2>
+          <div class="themes" id="themes"></div>
+          <h2>Layout</h2>
+          <div class="seg" data-seg="layout"><button data-v="upper">Above the speaker (recommended)</button><button data-v="scatter">Scattered cards</button><button data-v="stack">Stacked list</button><button data-v="hero">One big line</button></div>
+          <h2>Entrance animation</h2>
+          <div class="seg" data-seg="animation"><button data-v="rise">Rise</button><button data-v="zoom">Zoom</button><button data-v="blur">Focus</button><button data-v="type">Word by word</button><button data-v="none">None</button></div>
+          <h2>Font</h2>
+          <div class="seg" data-seg="fontFamily"><button data-v="inter">Inter</button><button data-v="poppins">Poppins</button><button data-v="playfair">Playfair</button><button data-v="mukta">Mukta</button><button data-v="system">System</button></div>
+        </div>
+        <div class="hide-embed">
+          <h2>Preview</h2>
+          <div class="preview" id="pv2"><iframe data-src="/display?preview=1" title="Backdrop preview"></iframe><span class="tag">PREVIEW</span></div>
+          <div class="row" style="margin-top:8px"><button class="sm" id="btnSample">Show a sample highlight</button><button class="ghost sm" id="btnResetLook">Reset look</button></div>
+        </div>
+      </div>
+      <h2>Size and timing</h2>
+      <div class="grid3">
+        <div><label class="f">Text size <span id="fsv"></span></label><input type="range" min="0.5" max="2" step="0.05" data-s="fontScale"></div>
+        <div><label class="f">Safe margin from edges (%)</label><input type="range" min="0" max="20" step="1" data-s="safeMargin"></div>
+        <div><label class="f">Keep bottom clear for speaker/podium: <span id="rbv"></span></label><input type="range" min="0" max="60" step="1" data-s="reserveBottom"></div>
+        <div><label class="f">Max highlights on screen</label><input type="number" min="1" max="6" data-s="maxVisible"></div>
+        <div><label class="f">Highlight stays at least (sec)</label><input type="number" min="3" max="120" data-s="ttlMin"></div>
+        <div><label class="f">Highlight stays at most (sec)</label><input type="number" min="3" max="120" data-s="ttlMax"></div>
+        <div><label class="f">Accent colours (blank = theme)</label><div class="row"><input type="color" id="c1"><input type="color" id="c2"><button class="ghost sm" id="btnAccentReset">Use theme</button></div></div>
+      </div>
+      <h2>Show on the backdrop</h2>
+      <div class="grid3">
+        <label class="sw"><input type="checkbox" data-s="showTitle"><span class="t"></span><span><b>Event title</b></span></label>
+        <label class="sw"><input type="checkbox" data-s="showSpeaker"><span class="t"></span><span><b>Speaker name</b></span></label>
+        <label class="sw"><input type="checkbox" data-s="showCaptions"><span class="t"></span><span><b>Live captions</b></span></label>
+        <label class="sw"><input type="checkbox" data-s="emphasizeKeyword"><span class="t"></span><span><b>Colour the key word</b></span></label>
+        <label class="sw"><input type="checkbox" data-s="showLabels"><span class="t"></span><span><b>Small labels</b><small>"Think about it", the year, "— Pitaji"</small></span></label>
+        <label class="sw"><input type="checkbox" data-s="animatedBg"><span class="t"></span><span><b>Moving background</b></span></label>
+      </div>
+      <div class="hint">Use the <b>Green screen</b> theme for vMix/ATEM keying, or <b>Transparent</b> as an OBS browser source.</div>
+    </section>
+
+    <!-- ================= AUDIO ================= -->
+    <section class="tab" id="tab-audio">
+      <h2>Listen to</h2>
+      <div class="seg" id="srcSeg"><button data-src="mic">Microphone</button><button data-src="tab">A browser tab's sound (testing with YouTube)</button></div>
+      <div class="hint" id="srcHint"></div>
+      <h2>Microphone (on this device)</h2>
+      <div class="row"><select id="mic" style="flex:1"></select><button class="ghost" id="btnRefreshMics">Refresh</button></div>
+      <div class="hint">Best: a line-out cable from the sound desk into the laptop. Otherwise a mic near a PA speaker, not near the audience.</div>
+      <div class="row" style="margin-top:12px"><div class="meter" style="height:16px"><i class="lvl"></i></div><span class="chip" id="db">— dB</span></div>
+      <div class="row" style="margin-top:10px"><button id="btnMicTest">Test microphone</button><span class="hint" id="micState"></span></div>
+
+      <h2>Input level</h2>
+      <label class="f">Input boost <span id="gainv"></span></label>
+      <input type="range" id="gain" min="0.5" max="4" step="0.1">
+      <div class="hint">Aim for speech peaks in the green and yellow. Red means it is too loud.</div>
+
+      <h2>Hear the speech on this computer</h2>
+      <label class="sw"><input type="checkbox" id="monitor"><span class="t"></span><span><b>Monitor audio</b><small>Play what the mic hears through headphones or speakers</small></span></label>
+      <div class="grid2" style="margin-top:8px">
+        <div><label class="f">Monitor volume</label><input type="range" id="monVol" min="0" max="1.5" step="0.05"></div>
+        <div><label class="f">Play through</label><select id="speakerOut"></select></div>
+      </div>
+      <div class="warnbox" style="margin-top:10px">Use headphones for monitoring. Playing the speech through speakers in the hall can cause feedback (howling).</div>
+
+      <h2>Processing</h2>
+      <div class="grid3">
+        <label class="sw"><input type="checkbox" id="optNs"><span class="t"></span><span><b>Noise suppression</b><small>For a noisy room mic</small></span></label>
+        <label class="sw"><input type="checkbox" id="optEc"><span class="t"></span><span><b>Echo cancellation</b></span></label>
+        <label class="sw"><input type="checkbox" id="optAgc"><span class="t"></span><span><b>Auto gain</b></span></label>
+      </div>
+      <div class="hint">Keep these off for a line-in feed from the sound desk. Changes apply on the next start.</div>
+    </section>
+
+    <!-- ================= ENGINES ================= -->
+    <section class="tab" id="tab-engines">
+      <h2>Languages</h2>
+      <label class="f">Languages the speakers will use (recognition listens for these)</label>
+      <div class="row" id="langsTop"></div>
+      <div class="grid3" style="margin-top:8px">
+        <div><label class="f">Hindi on the backdrop is written in</label><div class="seg" data-seg="scriptHi"><button data-v="roman">English letters</button><button data-v="native">हिन्दी script</button></div></div>
+        <div><label class="f">Gujarati on the backdrop is written in</label><div class="seg" data-seg="scriptGu"><button data-v="roman">English letters</button><button data-v="native">ગુજરાતી script</button></div></div>
+        <label class="sw"><input type="checkbox" data-s="translate"><span class="t"></span><span><b>Translate everything to English</b><small>Off = keep each speaker's own words</small></span></label>
+      </div>
+      <div class="hint" id="scriptExample"></div>
+
+      <h2>Speech recognition</h2>
+      <div class="seg" data-seg="sttEngine"><button data-v="soniox">Soniox · real-time (recommended)</button><button data-v="groq">Groq Whisper · free backup</button><button data-v="sarvam">Sarvam</button><button data-v="browser">Browser · free</button></div>
+      <div class="grid3" style="margin-top:8px">
+        <label class="sw"><input type="checkbox" data-s="sttFailover"><span class="t"></span><span><b>Auto-switch to Groq if Soniox fails</b><small>Bad key or no credit: keeps going, slower</small></span></label>
+        <div><label class="f">Judge after a pause of (ms)</label><input type="number" min="250" max="2000" step="50" data-s="pauseMs"><div class="hint">Lower is faster but may cut ideas. 400–500 is a good balance.</div></div>
+        <div><label class="f">Soniox end-of-sentence wait (ms)</label><input type="number" min="500" max="3000" step="100" data-s="endpointMs"></div>
+      </div>
+      <div class="box" style="margin-top:10px">
+        <div data-stt="browser">
+          <b>Browser speech</b> <span class="chip ok">free, no key</span>
+          <div class="hint">Built into Chrome and Edge (sends audio to Google). One language at a time, live word-by-word. Hindi speech in English mode comes out in Roman letters.</div>
+          <label class="f">Language</label>
+          <select data-s="browserLang"><option value="en-IN">English (India)</option><option value="hi-IN">Hindi</option><option value="gu-IN">Gujarati</option><option value="mr-IN">Marathi</option><option value="en-US">English (US)</option><option value="en-GB">English (UK)</option></select>
+        </div>
+        <div data-stt="groq">
+          <b>Groq Whisper</b> <span class="chip ok">free tier: about 2 hours of audio per hour</span>
+          <div class="hint">OpenAI's Whisper model on Groq's servers. Very accurate for English, Hindi and Gujarati. Text arrives phrase by phrase (1–2 s after each pause). Not the same company as Grok/xAI.</div>
+          <div class="grid2">
+            <div><label class="f">Model</label><select data-s="groqModel"><option value="whisper-large-v3-turbo">large-v3-turbo (fast)</option><option value="whisper-large-v3">large-v3 (most accurate)</option></select></div>
+            <div><label class="f">Spoken language</label><select data-s="sttLanguage"><option value="hi">Hindi / Hinglish (recommended)</option><option value="auto">Auto-detect (may translate Hindi to English)</option><option value="gu">Gujarati</option><option value="en">English</option><option value="mr">Marathi</option></select></div>
+          </div>
+          <div class="keyrow" data-key="groq" data-test="stt:groq" data-url="https://console.groq.com/keys" data-label="Groq key"></div>
+        </div>
+        <div data-stt="sarvam">
+          <b>Sarvam (Saaras)</b> <span class="chip info">free credits on signup, then about ₹1.5/min</span>
+          <div class="hint">Made in India for Indian languages. Best at Hindi + English or Gujarati + English mixed in one sentence ("codemix" writes English words in English letters and Hindi in Devanagari).</div>
+          <div class="grid3">
+            <div><label class="f">Model</label><select data-s="sarvamModel"><option value="saaras:v3">saaras:v3</option><option value="saaras:v4">saaras:v4</option></select></div>
+            <div><label class="f">Output (v3 only)</label><select data-s="sarvamMode"><option value="codemix">Codemix</option><option value="transcribe">Native script</option><option value="translit">Roman letters</option><option value="translate">English translation</option></select></div>
+            <div><label class="f">Spoken language</label><select data-s="sttLanguage"><option value="hi">Hindi / Hinglish</option><option value="auto">Auto-detect</option><option value="gu">Gujarati</option><option value="en">English</option><option value="mr">Marathi</option></select></div>
+          </div>
+          <div class="keyrow" data-key="sarvam" data-test="stt:sarvam" data-url="https://dashboard.sarvam.ai" data-label="Sarvam key"></div>
+        </div>
+        <div data-stt="soniox">
+          <b>Soniox</b> <span class="chip warn">paid · about ₹10 per hour</span>
+          <div class="hint">Live word-by-word with Hindi, Gujarati and English mixed in one sentence. The only engine fast enough for the "about one second" goal.</div>
+          <div class="hint">Languages are chosen at the top of this tab.</div>
+          <div class="keyrow" data-key="soniox" data-test="stt:soniox" data-url="https://console.soniox.com" data-label="Soniox key"></div>
+        </div>
+      </div>
+
+      <h2>Highlight picker (AI)</h2>
+      <div class="seg" data-seg="aiEngine"><button data-v="xai">Grok (xAI)</button><button data-v="groq">Groq</button><button data-v="claude">Claude</button><button data-v="openai">OpenAI</button><button data-v="gemini">Gemini</button><button data-v="offline">Offline</button></div>
+      <div class="box" style="margin-top:10px">
+        <div id="aiOpts">
+          <div class="grid2">
+            <div><label class="f" id="modelLabel">Model</label><div class="keyset"><input type="text" id="aiModel" list="modelList" autocomplete="off"><button class="ghost" id="btnModels" title="Ask the provider which models your key can use">Load models</button></div><datalist id="modelList"></datalist><div class="hint" id="modelHint"></div></div>
+            <div class="hint">How Hindi and Gujarati are written: Languages, at the top of this tab.</div>
+            <div><label class="f">Backup AI if the main one fails</label><select data-s="aiBackup"><option value="none">None</option><option value="xai">Grok (xAI)</option><option value="groq">Groq</option><option value="claude">Claude</option><option value="openai">OpenAI</option><option value="gemini">Gemini</option></select></div>
+            <div><label class="f">When an idea is half-said</label><select data-s="unfinished"><option value="wait">Wait until it is complete (recommended)</option><option value="early">Show early, then complete it in place</option></select></div>
+            <label class="sw"><input type="checkbox" data-s="sweeper"><span class="t"></span><span><b>Second look for missed points</b><small>Every 20 s, re-checks the last ~45 s of speech</small></span></label>
+          </div>
+          <div class="keyrow" id="aiKeyRow"></div>
+        </div>
+        <div id="offlineOpts" class="hint">Picks phrases with simple rules, no internet or key. Much less smart: use it only as a backup.</div>
+      </div>
+      <div class="grid3" style="margin-top:6px">
+        <div><label class="f">Words per highlight, min</label><input type="number" min="1" max="8" data-s="minWords"></div>
+        <div><label class="f">Words per highlight, max</label><input type="number" min="3" max="12" data-s="maxWords"></div>
+        <div><label class="f">Min gap between highlights (sec)</label><input type="number" min="2" max="60" data-s="minGapSec"></div>
+        <div><label class="f">Proposals expire after (sec)</label><input type="number" min="5" max="120" data-s="pendingExpireSec"></div>
+      </div>
+      <label class="sw" style="margin-top:10px"><input type="checkbox" data-s="aiFallback"><span class="t"></span><span><b>Use the offline picker if every AI fails</b><small>Not recommended in front of guests: its picks are crude. Off = show nothing instead.</small></span></label>
+      <label class="f">Extra instructions for the AI (optional)</label>
+      <textarea data-s="aiInstructions" placeholder="e.g. Prefer English. Favour numbers and calls to action. Never show anything about competitors."></textarea>
+      <div class="hint">API keys are stored only on this computer (data/secrets.json).</div>
+    </section>
+
+    <!-- ================= REHEARSAL ================= -->
+    <section class="tab" id="tab-rehearse">
+      <h2>1-minute system test</h2>
+      <div class="box">
+        <div class="row">
+          <button class="go big" id="btnPlayTest">▶ Play test speech</button>
+          <button class="pri big" id="btnReadTest">🎙 Read it myself</button>
+          <button class="ghost" id="btnCancelTest" hidden>Cancel test</button>
+          <span class="chip" id="testState" hidden></span>
+        </div>
+        <div class="hint"><b>Play</b>: a 64-second Hindi + Gujarati + English recording goes through the real system (Soniox → AI → backdrop). No mic needed.
+          <b>Read</b>: press it, read the lines below into your mic (WO Mic) at a normal pace, pausing briefly between lines, then press <b>Stop listening</b> on the Live tab.
+          Both start a fresh session and end with a scorecard. Run <b>Start fresh session</b> again before the real talk.</div>
+        <ol class="script" id="testScript"></ol>
+        <div id="testReport"></div>
+      </div>
+
+      <h2>Try it without a microphone</h2>
+      <div class="row"><button class="pri" id="btnDemo">▶ Play demo speech</button><span class="hint">Feeds a sample talk sentence by sentence, as if someone were speaking.</span></div>
+      <label class="f">Or paste a few sentences of a real speech</label>
+      <textarea id="inject" style="min-height:120px"></textarea>
+      <div class="row" style="margin-top:6px"><button id="btnInject">Send as if spoken</button><button class="ghost" id="btnClearHeard">Clear transcript</button></div>
+      <h2>Before the real talk</h2>
+      <div class="row"><button class="pri" id="btnFresh">Start fresh session</button><span class="hint">Clears the screen and forgets every rehearsal highlight. The AI never repeats a highlight it has already shown, so do this after rehearsing and before the guest starts.</span></div>
+
+      <h2>After the event</h2>
+      <div class="row"><a id="exportLink" href="#"><button class="ghost">Download recap (highlights + transcript)</button></a></div>
+      <div class="hint">Full logs are also saved in the <code>logs/</code> folder.</div>
+    </section>
+  </main>
+</div>
+<div class="toasts" id="toasts"></div>
+<audio id="monitorEl" autoplay hidden></audio>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const $$ = (sel, root = document) => [...root.querySelectorAll(sel)];
+const params = new URLSearchParams(location.search);
+const key = params.get('key') || '';
+const EMBED = params.has('embed');
+if (EMBED) document.body.classList.add('embed');
+const LABEL = EMBED ? 'backdrop screen' : (/Mobi|Android|iPhone/i.test(navigator.userAgent) ? 'phone' : 'operator panel');
+const store = { get: (k, d) => { try { const v = localStorage.getItem(k); return v === null ? d : JSON.parse(v); } catch { return d; } }, set: (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+const esc = (s) => String(s ?? '').replace(/[&<>"]/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+const post = (msg) => { if (EMBED) try { parent.postMessage(msg, location.origin); } catch {} };
+
+let ws, S = null, backoff = 500, listening = false, testing = false;
+
+/* ---------------- connection ---------------- */
+function connect() {
+  ws = new WebSocket((location.protocol === 'https:' ? 'wss://' : 'ws://') + location.host + '/ws?role=control&key=' + encodeURIComponent(key) + '&label=' + encodeURIComponent(LABEL));
+  ws.binaryType = 'arraybuffer';
+  ws.onopen = () => { backoff = 500; if (listening) send({ type: 'start', engine: engineInUse, label: LABEL }); };
+  ws.onmessage = (e) => {
+    const m = JSON.parse(e.data);
+    if (m.type === 'full') { S = m; render(); }
+    else if (m.type === 'transcript') renderHeard(m);
+    else if (m.type === 'toast') toast(m.msg, m.level);
+    else if (m.type === 'test-report') renderReport(m);
+    else if (m.type === 'models') { modelsFor = m.provider; $('modelList').innerHTML = m.models.map((id) => `<option value="${esc(id)}">`).join(''); toast(m.models.length + ' models loaded. Click the model box to choose.', 'ok'); }
+    else if (m.type === 'capture-stop') { if (listening) { stopListeningLocal(); toast(m.reason || 'Listening stopped', 'info'); render(); } }
+  };
+  ws.onclose = () => { S = null; render(); setTimeout(connect, backoff); backoff = Math.min(backoff * 1.6, 4000); };
+}
+const send = (o) => ws && ws.readyState === 1 && ws.send(JSON.stringify(o));
+const setS = (patch) => send({ type: 'settings', settings: patch });
+connect();
+
+function toast(msg, level = 'info') {
+  const d = document.createElement('div');
+  d.className = level; d.textContent = msg;
+  $('toasts').appendChild(d);
+  setTimeout(() => d.remove(), level === 'bad' ? 9000 : 4500);
+}
+
+/* ---------------- tabs ---------------- */
+function showTab(t) {
+  $$('nav button[data-tab]').forEach((b) => b.classList.toggle('on', b.dataset.tab === t));
+  $$('section.tab').forEach((s) => s.classList.toggle('on', s.id === 'tab-' + t));
+  store.set('tab', t);
+  syncPreviews();
+}
+$$('nav button[data-tab]').forEach((b) => (b.onclick = () => showTab(b.dataset.tab)));
+showTab($('tab-' + store.get('tab', 'live')) ? store.get('tab', 'live') : 'live');
+
+/* Previews load lazily and only in the visible tab, so they do not count as extra screens or waste the GPU. */
+function syncPreviews() {
+  if (EMBED) return;
+  for (const f of $$('.preview iframe')) {
+    const visible = f.closest('section.tab').classList.contains('on');
+    if (visible && !f.src) f.src = f.dataset.src;
+    if (!visible && f.src) f.removeAttribute('src');
+  }
+  fitPreviews();
+}
+function fitPreviews() { for (const p of $$('.preview')) { const f = p.querySelector('iframe'); f.style.transform = `scale(${p.clientWidth / 1920})`; } }
+addEventListener('resize', fitPreviews);
+
+/* ---------------- generic settings binding ---------------- */
+const bound = $$('[data-s]');
+for (const el of bound) {
+  const k = el.dataset.s;
+  const val = () => (el.type === 'checkbox' ? el.checked : el.type === 'number' || el.type === 'range' ? Number(el.value) : el.value);
+  el.addEventListener('change', () => setS({ [k]: val() }));
+  if (el.type === 'range') { let t; el.addEventListener('input', () => { clearTimeout(t); t = setTimeout(() => setS({ [k]: val() }), 60); }); }
+}
+for (const seg of $$('[data-seg]')) seg.addEventListener('click', (e) => { const b = e.target.closest('button[data-v]'); if (b) setS({ [seg.dataset.seg]: b.dataset.v }); });
+
+const THEMES = [
+  ['navyoday', 'Navyoday (light)', 'linear-gradient(135deg,#fdf9f2,#f6c343 55%,#1b3263)'],
+  ['success', 'Behind the Success (light)', 'linear-gradient(135deg,#fffaf1,#e8c66a 55%,#7b5214)'],
+  ['midnight', 'Midnight', 'linear-gradient(135deg,#0d1b3d,#1f4bff 60%,#ff8a00)'],
+  ['aurora', 'Aurora', 'linear-gradient(135deg,#03121a,#00c2a8 55%,#8b5cf6)'],
+  ['saffron', 'Saffron', 'linear-gradient(135deg,#1a0705,#ff6a00 60%,#ffb000)'],
+  ['royal', 'Royal gold', 'linear-gradient(135deg,#050a1f,#2742c9 55%,#d4af37)'],
+  ['ivory', 'Ivory (light)', 'linear-gradient(135deg,#fbf8f1,#f5b971 70%,#9ad1c5)'],
+  ['chroma', 'Green screen', '#00b140'],
+  ['transparent', 'Transparent (OBS)', 'repeating-conic-gradient(#333 0 25%,#555 0 50%) 0 0/16px 16px'],
+];
+$('themes').innerHTML = THEMES.map(([v, n, bg]) => `<button data-v="${v}" style="background:${bg};color:${['ivory', 'navyoday', 'success'].includes(v) ? '#222' : '#fff'}">${n}</button>`).join('');
+$('themes').onclick = (e) => { const b = e.target.closest('button[data-v]'); if (b) setS({ theme: b.dataset.v }); };
+$('c1').onchange = () => setS({ accent: $('c1').value });
+$('c2').onchange = () => setS({ accent2: $('c2').value });
+$('btnAccentReset').onclick = () => setS({ accent: '', accent2: '' });
+$('btnResetLook').onclick = () => send({ type: 'reset-look' });
+$('btnSample').onclick = () => send({ type: 'manual', text: 'Sample highlight on the backdrop' });
+
+/* ---------------- render ---------------- */
+const chip = (text, cls = '') => `<span class="chip ${cls}">${text}</span>`;
+function withKw(text, kw) {
+  if (!kw || !text.includes(kw)) return esc(text);
+  const i = text.indexOf(kw);
+  return esc(text.slice(0, i)) + `<span class="kw">${esc(kw)}</span>` + esc(text.slice(i + kw.length));
+}
+
+function render() {
+  if (!S) { $('chips').innerHTML = chip('Disconnected from the backdrop server, retrying…', 'bad'); return; }
+  const st = S.status, set = S.settings;
+  const sttCls = st.stt === 'live' ? 'ok' : st.stt === 'idle' ? '' : st.stt === 'error' ? 'bad' : 'warn';
+  $('chips').innerHTML =
+    (st.listening ? chip('<span class="live-dot"></span> LISTENING' + (st.captureBy ? ' on ' + esc(st.captureBy) : ''), 'bad') : chip('Not listening')) +
+    chip('Speech: ' + esc(st.stt) + (st.sttMsg ? ' · ' + esc(st.sttMsg) : ''), sttCls) +
+    (set.aiEngine === 'offline' || st.demo ? chip('AI: offline picker', 'info')
+      : !S.keys[S.providers[set.aiEngine].key] ? chip('AI: no ' + esc(S.providers[set.aiEngine].label) + ' key, using offline picker', 'warn')
+      : chip('AI: ' + esc(S.providers[set.aiEngine].label) + ' ' + esc(st.ai) + (st.ai === 'ok' && st.aiMs ? ' · ' + st.aiMs + ' ms' : '') + (st.aiMsg && st.ai !== 'ok' ? ' · ' + esc(st.aiMsg) : ''), st.ai === 'ok' ? 'ok' : st.ai === 'backup' ? 'warn' : 'bad')) +
+    (st.aiBackupMsg ? chip('Backup AI: ' + esc(st.aiBackupMsg), 'warn') : '') +
+    chip('Screens: ' + st.displays, st.displays ? 'ok' : 'bad') +
+    (st.displayWarn ? chip(esc(st.displayWarn), 'bad') : '') +
+    (set.showLock ? chip('SHOW LOCK on', 'ok') : '') +
+    (st.latencyMs ? chip('Speech → screen ' + (st.latencyMs / 1000).toFixed(1) + ' s', st.latencyMs < 1800 ? 'ok' : st.latencyMs < 3500 ? 'warn' : 'bad') : '') +
+    chip(set.approveMode ? 'APPROVE mode' : 'AUTO mode', set.approveMode ? 'warn' : 'info') +
+    (set.paused ? chip('PAUSED', 'bad') : '') + (set.standby ? chip('STANDBY', 'warn') : '');
+
+  // bound inputs (skip the one being edited)
+  const a = document.activeElement;
+  for (const el of bound) {
+    if (el === a) continue;
+    const v = set[el.dataset.s];
+    if (el.type === 'checkbox') el.checked = !!v; else el.value = v;
+  }
+  for (const seg of $$('[data-seg]')) $$('button', seg).forEach((b) => b.classList.toggle('on', set[seg.dataset.seg] === b.dataset.v));
+  $$('#themes button').forEach((b) => b.classList.toggle('on', b.dataset.v === set.theme));
+  if (a !== $('c1')) $('c1').value = set.accent || '#ffb020';
+  if (a !== $('c2')) $('c2').value = set.accent2 || '#2ee6c5';
+  $('fsv').textContent = Math.round(set.fontScale * 100) + '%';
+  $('tsv').textContent = set.textShare + '%';
+  for (const img of $$('[data-logo]')) { const u = set[img.dataset.logo]; if (u) { if (img.getAttribute('src') !== u) img.src = u; img.style.visibility = ''; } else img.style.visibility = 'hidden'; }
+  $('memory').textContent = st.remembered ? `Remembers ${st.remembered} shown line${st.remembered > 1 ? 's' : ''} (won't repeat them)` : 'Memory empty: any line can be shown';
+  $('scriptExample').textContent = set.translate ? 'Example: “Honest earnings never taste bitter”'
+    : 'Example: Hindi → ' + (set.scriptHi === 'native' ? '“ईमानदारी की रोटी कभी कड़वी नहीं लगती”' : '“Imaandari ki roti kabhi kadvi nahi lagti”')
+      + ' · Gujarati → ' + (set.scriptGu === 'native' ? '“વચન હંમેશા મોટું હોવું જોઈએ”' : '“Vachan hamesha motu hovu joie”');
+  $('rbv').textContent = set.reserveBottom + '%';
+  if (!$('presets').children.length) $('presets').innerHTML = Object.entries(S.presets).map(([k, p]) => `<button class="pri" data-preset="${k}" style="text-align:left">${esc(p.label)}<br><small style="font-weight:500;opacity:.8">${esc(p.when)}</small></button>`).join('');
+  $$('[data-stt]').forEach((d) => (d.hidden = d.dataset.stt !== set.sttEngine));
+  renderAi(set);
+  renderKeyRows();
+  $('langsTop').innerHTML = S.schema.languageHints.options.map((l) => `<label class="chip"><input type="checkbox" value="${l}" ${set.languageHints.includes(l) ? 'checked' : ''}> ${({ hi: 'Hindi', gu: 'Gujarati', en: 'English', mr: 'Marathi', bn: 'Bengali', ta: 'Tamil', te: 'Telugu', kn: 'Kannada', pa: 'Punjabi', ur: 'Urdu' })[l]}</label>`).join('');
+
+  // listening buttons
+  $('btnStart').hidden = listening;
+  $('btnStop').hidden = !listening && !st.listening;
+  $('btnStop').textContent = listening ? '■ Stop listening' : '■ Stop (listening on ' + (st.captureBy || 'another device') + ')';
+  const ENG = { browser: 'Browser speech (' + set.browserLang + ')', groq: 'Groq Whisper', sarvam: 'Sarvam', soniox: 'Soniox' };
+  const micName = $('mic').selectedOptions[0]?.text || 'default';
+  $('listenHint').textContent = listening
+    ? `Listening here with ${ENG[engineInUse]}. Mic: ${micName}.`
+    : st.listening ? 'Another device is capturing audio. Starting here takes over.'
+    : set.sttEngine !== 'browser' && !S.keys[set.sttEngine] ? `${ENG[set.sttEngine]} has no key yet: Start will use ${S.keys.groq && set.sttEngine !== 'groq' ? 'Groq Whisper (slower)' : 'free Browser speech'} instead. Mic: ${micName}.`
+    : `Engine: ${ENG[set.sttEngine]}. Mic: ${micName}. Change in Audio / Engines.`;
+
+  // queues (left alone while the operator is typing an edit in them)
+  const editing = (id) => $(id).contains(document.activeElement) && document.activeElement.tagName === 'INPUT';
+  if (!editing('pending')) $('pending').innerHTML = S.pending.length
+    ? S.pending.map((p) => `<div class="item pend" data-id="${p.id}"><div class="t">${withKw(p.text, p.keyword)}</div><span class="meta">${esc(p.source || '')}</span><button class="go" data-a="approve" data-id="${p.id}">Approve</button><button class="sm" data-edit="${p.id}">Edit</button><button class="ghost" data-a="reject" data-id="${p.id}">✕</button></div>`).join('')
+    : `<div class="empty">${set.approveMode ? 'Nothing waiting.' : 'Approve mode is off: the AI publishes by itself.'}</div>`;
+  if (!editing('live')) $('live').innerHTML = S.live.length
+    ? S.live.map((p) => `<div class="item" data-id="${p.id}"><div class="t">${withKw(p.text, p.keyword)}${p.complete === false ? ' <span class="meta">…being completed</span>' : ''}</div><span class="meta">${esc(p.kind || 'quote')} · ${esc(p.source || '')} · ${p.pinned ? '📌 pinned' : p.ttlLeft + 's'}</span><button class="sm" data-editlive="${p.id}">Edit</button><button class="sm" data-a="pin" data-id="${p.id}">${p.pinned ? 'Unpin' : 'Pin'}</button><button class="stop sm" data-a="remove" data-id="${p.id}">Remove</button></div>`).join('')
+    : '<div class="empty">Screen is clear.</div>';
+  $('history').innerHTML = S.history.slice().reverse().slice(0, 16).map((h) => `<button class="ghost sm" data-a="reshow" data-id="${h.id}">${esc(h.text)}</button>`).join('') || '<div class="empty">None yet.</div>';
+  $('exportLink').href = '/export?key=' + encodeURIComponent(key);
+  renderSpeakers();
+  renderTest();
+}
+
+function renderHeard(m) {
+  const el = $('heard');
+  el.innerHTML = (m.final || m.partial) ? esc(m.final) + (m.partial ? `<i>${esc(m.partial)}</i>` : '') : '<i>Nothing yet.</i>';
+  el.scrollTop = el.scrollHeight;
+}
+
+/* ---------------- actions ---------------- */
+document.body.addEventListener('click', (e) => {
+  const b = e.target.closest('button[data-a]');
+  if (b) return send({ type: b.dataset.a, id: Number(b.dataset.id) });
+  const pr = e.target.closest('button[data-preset]');
+  if (pr) { if (confirm('Load "' + S.presets[pr.dataset.preset].label + '"? This replaces the look, titles and recognition names.')) send({ type: 'preset', name: pr.dataset.preset }); return; }
+  const el = e.target.closest('button[data-editlive]');
+  if (el) {
+    // Fix a highlight that is already on the backdrop; the card rewrites itself in place.
+    const row = el.closest('.item'), id = Number(el.dataset.editlive), p = S.live.find((x) => x.id === id);
+    if (!p) return;
+    row.innerHTML = `<input type="text" value="${esc(p.text)}"><button class="go">Update</button>`;
+    const inp = row.querySelector('input'); inp.focus(); inp.select();
+    const go = () => send({ type: 'edit-live', id, text: inp.value });
+    row.querySelector('button').onclick = go;
+    inp.onkeydown = (k) => { if (k.key === 'Enter') go(); if (k.key === 'Escape') render(); };
+    return;
+  }
+  const ed = e.target.closest('button[data-edit]');
+  if (ed) {
+    const row = ed.closest('.item'), id = Number(ed.dataset.edit), p = S.pending.find((x) => x.id === id);
+    if (!p) return;
+    row.innerHTML = `<input type="text" value="${esc(p.text)}"><button class="go">Show</button>`;
+    const inp = row.querySelector('input'); inp.focus(); inp.select();
+    const go = () => send({ type: 'edit-approve', id, text: inp.value });
+    row.querySelector('button').onclick = go;
+    inp.onkeydown = (k) => { if (k.key === 'Enter') go(); if (k.key === 'Escape') render(); };
+  }
+});
+$('langsTop').addEventListener('change', () => setS({ languageHints: $$('#langsTop input:checked').map((c) => c.value) }));
+$('btnClear').onclick = () => send({ type: 'clear' });
+$('btnIdentify').onclick = () => send({ type: 'identify' });
+$('btnInject').onclick = () => { if ($('inject').value.trim()) { send({ type: 'inject', text: $('inject').value }); toast('Sent', 'ok'); } };
+$('btnClearHeard').onclick = () => send({ type: 'clear-transcript' });
+/* ---------------- 1-minute system test ---------------- */
+const LANG = { hi: 'Hindi', gu: 'Gujarati', en: 'English' };
+function renderTest() {
+  if (!$('testScript').children.length && S.testSpeech) $('testScript').innerHTML = S.testSpeech.map((s) => `<li>${esc(s.text)}<small>${LANG[s.lang]} · expect: ${esc(s.expect)}</small></li>`).join('');
+  const t = S.status.test;
+  $('btnPlayTest').disabled = $('btnReadTest').disabled = !!t;
+  $('btnCancelTest').hidden = !t;
+  $('testState').hidden = !t;
+  if (t) $('testState').textContent = t.kind === 'play' ? `Playing test speech… ${t.progress}%` : 'Reading test: speak now, then press Stop listening';
+  $('testState').className = 'chip ' + (t ? 'warn' : '');
+  if (!t) document.body.classList.remove('reading');
+}
+function renderReport(r) {
+  document.body.classList.remove('reading');
+  const col = (ms) => (ms < 1500 ? 'ok' : ms < 3000 ? 'warn' : 'bad');
+  const rows = r.rows.map((row) => `<tr><td>${esc(row.said)}${row.lang ? `<br><small class="meta">${LANG[row.lang]} · expect ${esc(row.expect)}</small>` : ''}</td>
+    <td>${row.results.length ? row.results.map((x) => `<div class="hl">${esc(x.text)}</div><span class="chip ${col(x.ms)}">${x.type === 'update' ? 'completed in place' : 'shown'} · ${(x.ms / 1000).toFixed(1)} s</span>`).join('<br>') : '<span class="meta">nothing shown</span>'}</td></tr>`).join('');
+  const verdict = !r.count ? ['bad', 'No highlights appeared. Check the Speech and AI chips at the top.']
+    : r.median < 1500 ? ['ok', 'Ready: fast and working.'] : r.median < 3000 ? ['warn', 'Working, but slower than the 1-second goal.'] : ['bad', 'Too slow. Check internet and engines.'];
+  $('testReport').innerHTML = `<div class="report"><h2>Scorecard${r.cancelled ? ' (cancelled)' : ''}</h2>
+    <div class="row"><span class="chip ${verdict[0]}">${verdict[1]}</span><span class="chip">${r.count} highlights</span>${r.median != null ? `<span class="chip ${col(r.median)}">typical ${(r.median / 1000).toFixed(1)} s after the sentence</span><span class="chip ${col(r.max)}">slowest ${(r.max / 1000).toFixed(1)} s</span>` : ''}<span class="chip">speech: ${esc(r.engine)}</span></div>
+    <table><tr><th>${r.kind === 'play' ? 'Speaker said' : ''}</th><th>Backdrop showed</th></tr>${rows}</table></div>`;
+  toast('Test finished: scorecard in Rehearsal', r.count ? 'ok' : 'bad');
+  showTab('rehearse');
+}
+$('btnGoTest').onclick = () => showTab('rehearse');
+$('btnForget').onclick = () => send({ type: 'forget-shown' });
+$('btnPlayTest').onclick = () => {
+  if (listening || S.status.listening) return toast('Stop listening first, then run the test.', 'warn');
+  $('testReport').innerHTML = '';
+  send({ type: 'play-test' });
+};
+$('btnReadTest').onclick = async () => {
+  if (listening || S.status.listening) return toast('Stop listening first, then run the test.', 'warn');
+  $('testReport').innerHTML = '';
+  send({ type: 'read-test' });
+  document.body.classList.add('reading');
+  await startListening();
+  if (!listening) { send({ type: 'cancel-test' }); document.body.classList.remove('reading'); return; }
+  toast('Read the lines in Rehearsal at a normal pace, then press Stop listening.', 'info');
+};
+$('btnCancelTest').onclick = () => { send({ type: 'cancel-test' }); if (listening) { stopListeningLocal(); send({ type: 'stop' }); } };
+
+$('btnFresh').onclick = () => { if (confirm('Start a fresh session? The screen clears and rehearsal highlights are forgotten.')) send({ type: 'reset-session' }); };
+const manual = () => { const t = $('manual').value.trim(); if (t) { send({ type: 'manual', text: t }); $('manual').value = ''; } };
+$('btnManual').onclick = manual;
+$('manual').addEventListener('keydown', (e) => { if (e.key === 'Enter') manual(); });
+/* ---------------- engines: AI provider, model, keys ---------------- */
+const modelKey = (p) => 'model' + p[0].toUpperCase() + p.slice(1);
+let modelsFor = '';
+function renderAi(set) {
+  const p = set.aiEngine, off = p === 'offline';
+  $('aiOpts').hidden = off; $('offlineOpts').hidden = !off;
+  if (off) return;
+  const info = S.providers[p];
+  $('modelLabel').textContent = info.label + ' model';
+  if (document.activeElement !== $('aiModel')) $('aiModel').value = set[modelKey(p)] || info.defaultModel;
+  $('modelHint').textContent = 'Default: ' + info.defaultModel + '. Pick a fast, cheap model: highlights are short.';
+  if (modelsFor !== p) { $('modelList').innerHTML = ''; modelsFor = ''; }
+  const row = $('aiKeyRow');
+  row.dataset.key = info.key; row.dataset.test = 'ai:' + p; row.dataset.url = info.console; row.dataset.label = info.label + ' key';
+}
+$('aiModel').addEventListener('change', () => { if (S) setS({ [modelKey(S.settings.aiEngine)]: $('aiModel').value.trim() }); });
+$('btnModels').onclick = () => { toast('Asking ' + S.providers[S.settings.aiEngine].label + ' for its models…'); send({ type: 'list-models', provider: S.settings.aiEngine }); };
+
+// Key rows: one per engine/provider, rendered from data attributes. Inputs keep their typed value across renders.
+function renderKeyRows() {
+  for (const row of $$('.keyrow')) {
+    const k = row.dataset.key; if (!k) continue;
+    const sig = k + '|' + row.dataset.test;
+    if (row.dataset.sig !== sig) {
+      row.dataset.sig = sig;
+      row.innerHTML = `<label class="f">${esc(row.dataset.label)} <span class="chip kstate"></span> · <a href="${esc(row.dataset.url)}" target="_blank" rel="noopener">get a key</a></label>
+        <div class="keyset"><input type="password" placeholder="Paste key here" autocomplete="off"><button class="pri ksave">Save</button><button class="ktest">Test</button></div>`;
+    }
+    const st = row.querySelector('.kstate');
+    st.textContent = S.keys[k] || 'not set'; st.className = 'chip kstate ' + (S.keys[k] ? 'ok' : 'bad');
+  }
+}
+document.body.addEventListener('click', (e) => {
+  const row = e.target.closest('.keyrow'); if (!row) return;
+  const inp = row.querySelector('input');
+  if (e.target.closest('.ksave')) {
+    if (!inp.value.trim()) return toast('Paste a key first', 'warn');
+    send({ type: 'set-keys', [row.dataset.key]: inp.value.trim() }); inp.value = '';
+  } else if (e.target.closest('.ktest')) {
+    const [kind, name] = row.dataset.test.split(':');
+    toast('Testing ' + row.dataset.label.replace(/ key$/, '') + '…');
+    send(kind === 'ai' ? { type: 'test-ai', provider: name } : { type: 'test-stt', engine: name });
+  }
+});
+
+// Speakers (saved on the server, with photos)
+let editingId = '';
+let formPhoto = '';
+let photoFor = ''; // the speaker whose card's 📷 was pressed
+
+async function uploadPhoto(file) {
+  if (file.size > 25e6) throw new Error('That photo is over 25 MB. Use a smaller one.');
+  const r = await fetch('/upload-photo?key=' + encodeURIComponent(key), { method: 'POST', headers: { 'Content-Type': file.type || 'application/octet-stream' }, body: file });
+  const j = await r.json();
+  if (!r.ok) throw new Error(j.error || r.status);
+  return j.url;
+}
+
+function renderSpeakers() {
+  const list = S.speakers || [];
+  const active = S.settings.activeSpeakerId;
+  const sig = JSON.stringify([list, active]);
+  if (renderSpeakers.sig === sig) return; // only redraw when something changed (keeps buttons clickable)
+  renderSpeakers.sig = sig;
+  const cur = list.find((s) => s.id === active);
+  $('onStage').innerHTML = cur
+    ? `${cur.photo ? `<img src="${esc(cur.photo)}" alt="">` : ''}<div>${esc(cur.name)}<small>${esc(cur.role || '')}</small></div>`
+    : '<div style="color:var(--muted);font-weight:600">Nobody · the backdrop shows no photo or name</div>';
+  const i = list.findIndex((s) => s.id === active);
+  $('spPrev').disabled = !list.length || i === 0;
+  $('spNext').disabled = !list.length || (i >= 0 && i === list.length - 1);
+  $('spNext').textContent = i < 0 && list.length ? 'Start with ' + (list[0].name || 'first') + ' ▶' : 'Next ▶';
+  $('spOff').disabled = !cur;
+  $('roster').innerHTML = list.map((s, n) => `<div class="spcard${s.id === active ? ' on' : ''}">
+      <div class="pic" data-golive="${s.id}" title="${s.id === active ? 'On stage now' : 'Put on stage'}">${s.photo ? `<img src="${esc(s.photo)}" alt="">` : 'No photo'}${s.id === active ? '<span class="badge">ON STAGE</span>' : ''}<span class="num">${n + 1}</span></div>
+      <div class="nm">${esc(s.name || '(no name)')}</div><div class="rl">${esc(s.role || '')}</div>
+      <div class="acts">
+        ${s.id === active ? '<button class="ghost" data-golive="">Off stage</button>' : `<button class="go" data-golive="${s.id}">Go live</button>`}
+        <button data-spphoto="${s.id}" title="Choose or change the photo">Photo</button>
+        <button data-spedit="${s.id}" title="Edit name, role, topic">Edit</button>
+        <button class="ghost" data-spmove="${s.id}" data-dir="-1" title="Earlier in the running order" ${n === 0 ? 'disabled' : ''}>◀</button>
+        <button class="ghost" data-spmove="${s.id}" data-dir="1" title="Later in the running order" ${n === list.length - 1 ? 'disabled' : ''}>▶</button>
+        <button class="ghost" data-spdel="${s.id}" title="Delete">✕</button>
+      </div></div>`).join('') + '<div class="spcard add" id="spAddCard">+ Add speaker</div>';
+  $('stageSpeakers').innerHTML = list.length
+    ? list.map((s) => `<button class="${s.id === active ? 'go' : 'ghost'} sm" data-golive="${s.id}">${s.id === active ? '● ' : ''}${esc(s.name || '(no name)')}</button>`).join('') + `<button class="ghost sm" data-golive="" ${active ? '' : 'disabled'}>Off stage</button>`
+    : '<span class="hint">Add speakers in the Speakers tab.</span>';
+}
+
+function setFormPhoto(url) {
+  formPhoto = url || '';
+  $('spPhotoPreview').src = formPhoto;
+  $('spPhotoPreview').style.display = formPhoto ? 'block' : 'none';
+  $('spPhotoHint').style.display = formPhoto ? 'none' : '';
+}
+function resetForm() {
+  editingId = '';
+  for (const id of ['spName', 'spRole', 'spTopic', 'spTerms', 'spAbout']) $(id).value = '';
+  $('spPhotoFile').value = '';
+  setFormPhoto('');
+  $('spFormTitle').textContent = 'Add a speaker'; $('spCancel').hidden = true;
+}
+document.body.addEventListener('click', (e) => {
+  if (e.target.closest('#spAddCard')) { resetForm(); $('spName').focus(); return; }
+  const go = e.target.closest('[data-golive]');
+  if (go) { send({ type: 'speaker-activate', id: go.dataset.golive }); return; }
+  const ph = e.target.closest('[data-spphoto]');
+  if (ph) { photoFor = ph.dataset.spphoto; $('cardPhotoFile').value = ''; $('cardPhotoFile').click(); return; }
+  const ed = e.target.closest('[data-spedit]');
+  if (ed) {
+    const s = S.speakers.find((x) => x.id === ed.dataset.spedit); if (!s) return;
+    editingId = s.id;
+    $('spName').value = s.name || ''; $('spRole').value = s.role || ''; $('spTopic').value = s.topic || ''; $('spTerms').value = s.terms || ''; $('spAbout').value = s.about || '';
+    setFormPhoto(s.photo);
+    $('spFormTitle').textContent = 'Edit ' + (s.name || 'speaker'); $('spCancel').hidden = false;
+    $('spName').focus();
+    return;
+  }
+  const mv = e.target.closest('[data-spmove]');
+  if (mv) { send({ type: 'speaker-move', id: mv.dataset.spmove, dir: Number(mv.dataset.dir) }); return; }
+  const del = e.target.closest('[data-spdel]');
+  if (del) { const s = S.speakers.find((x) => x.id === del.dataset.spdel); if (s && confirm('Delete ' + (s.name || 'this speaker') + '?')) send({ type: 'speaker-delete', id: s.id }); }
+});
+// 📷 on a card: choose a new photo for that speaker, saved straight away.
+$('cardPhotoFile').onchange = async () => {
+  const f = $('cardPhotoFile').files[0], s = S.speakers.find((x) => x.id === photoFor);
+  if (!f || !s) return;
+  toast('Uploading photo for ' + (s.name || 'speaker') + '…');
+  try { send({ type: 'speaker-save', speaker: { ...s, photo: await uploadPhoto(f) } }); }
+  catch (err) { toast('Photo upload failed: ' + err.message, 'bad'); }
+};
+$('spPhotoBox').onclick = () => $('spPhotoFile').click();
+$('spPhotoFile').onchange = async () => {
+  const f = $('spPhotoFile').files[0];
+  if (!f) return;
+  toast('Uploading photo…');
+  try { setFormPhoto(await uploadPhoto(f)); toast('Photo ready. Press Save speaker.', 'ok'); }
+  catch (err) { toast('Photo upload failed: ' + err.message, 'bad'); }
+};
+$('spSave').onclick = () => {
+  const name = $('spName').value.trim();
+  if (!name) return toast('Enter the speaker’s name', 'warn');
+  send({ type: 'speaker-save', speaker: { id: editingId, name, role: $('spRole').value, topic: $('spTopic').value, terms: $('spTerms').value, about: $('spAbout').value, photo: formPhoto } });
+  resetForm();
+};
+$('spCancel').onclick = resetForm;
+$('spPrev').onclick = () => send({ type: 'speaker-step', dir: -1 });
+$('spNext').onclick = () => send({ type: 'speaker-step', dir: 1 });
+$('spOff').onclick = () => send({ type: 'speaker-activate', id: '' });
+
+// Demo speech
+const DEMO = [
+  'Good evening everyone, thank you for having me here tonight.',
+  'When we started this business in 1998 we had just two people and one small shop in Bhavnagar.',
+  'Today we employ more than four thousand people across eleven states.',
+  'The biggest lesson I learned is that trust compounds faster than money.',
+  'हमारी सबसे बड़ी ताकत हमारा समुदाय है, जो हर मुश्किल में साथ खड़ा रहता है।',
+  'Every young entrepreneur here should remember that discipline beats talent when talent is not disciplined.',
+  'We invested twenty percent of our profits back into training our people every single year.',
+  'સફળતા માટે ધીરજ અને પ્રામાણિકતા બંને જરૂરી છે.',
+  'The next decade belongs to founders who build for India first and then for the world.',
+  'So my request to you is simple: start small, stay honest, and never stop learning.',
+];
+let demoTimer = null;
+$('btnDemo').onclick = () => {
+  if (demoTimer) { clearInterval(demoTimer); demoTimer = null; $('btnDemo').textContent = '▶ Play demo speech'; return; }
+  let i = 0;
+  $('btnDemo').textContent = '■ Stop demo';
+  const step = () => { if (i >= DEMO.length) { clearInterval(demoTimer); demoTimer = null; $('btnDemo').textContent = '▶ Play demo speech'; return; } send({ type: 'inject', text: DEMO[i++] }); };
+  step(); demoTimer = setInterval(step, 4500);
+};
+
+// Second screen
+$('btnOpenDisplay').onclick = async () => {
+  let f = 'popup,width=1280,height=720';
+  if ('getScreenDetails' in window) {
+    try {
+      const sd = await window.getScreenDetails();
+      const ext = sd.screens.find((s) => s !== sd.currentScreen) || sd.screens.find((s) => !s.isPrimary);
+      if (ext) f = `popup,left=${ext.availLeft},top=${ext.availTop},width=${ext.availWidth},height=${ext.availHeight}`;
+      else toast('Only one screen found. Connect the LED/projector and set Windows to "Extend" (Win+P).', 'warn');
+    } catch { toast('Allow "Window management" when Chrome asks, so the backdrop can open on the second screen.', 'warn'); }
+  }
+  const w = window.open('/display', 'liveBackdrop', f);
+  if (!w) toast('Pop-up blocked. Allow pop-ups for this site.', 'bad');
+  else toast('Backdrop opened. Click once on it (or press F) to go fullscreen.', 'ok');
+};
+
+/* ---------------- keyboard ---------------- */
+document.addEventListener('keydown', (e) => {
+  if (EMBED && (e.key === 'Escape' || ((e.ctrlKey || e.metaKey) && e.shiftKey && e.key.toLowerCase() === 's'))) { e.preventDefault(); post(e.key === 'Escape' ? 'drawer:close' : 'drawer:toggle'); return; }
+  if (['INPUT', 'TEXTAREA', 'SELECT'].includes(document.activeElement.tagName) || !S || e.ctrlKey || e.metaKey || e.altKey) return;
+  const k = e.key.toLowerCase();
+  if (k === 'a' && S.pending[0]) send({ type: 'approve', id: S.pending[0].id });
+  else if (k === 'r' && S.pending[0]) send({ type: 'reject', id: S.pending[0].id });
+  else if (k === 'c') send({ type: 'clear' });
+  else if (k === 'p') setS({ paused: !S.settings.paused });
+  else if (k === 'b') setS({ standby: !S.settings.standby });
+});
+if (EMBED) for (const ev of ['pointerdown', 'keydown', 'input', 'wheel']) document.addEventListener(ev, () => post('drawer:activity'), { passive: true });
+
+/* ================= AUDIO ================= */
+// Worklet: resample the device rate down to 16 kHz mono 16-bit PCM, report the peak level.
+const WORKLET = `class P extends AudioWorkletProcessor{constructor(){super();this.r=sampleRate/16000;this.pos=0;this.prev=0;this.out=new Int16Array(1600);this.n=0;this.pk=0}
+process(inputs){const c=inputs[0][0];if(!c)return true;for(let k=0;k<c.length;k++){const v=c[k];const a=Math.abs(v);if(a>this.pk)this.pk=a;
+this.pos+=1;while(this.pos>=this.r){this.pos-=this.r;const f=Math.max(-1,Math.min(1,v));this.out[this.n++]=f<0?f*32768:f*32767;
+if(this.n===this.out.length){this.port.postMessage({pcm:this.out.buffer,pk:this.pk},[this.out.buffer]);this.out=new Int16Array(1600);this.n=0;this.pk=0}}}return true}}
+registerProcessor('pcm16k',P)`;
+
+const audio = { ctx: null, stream: null, src: null, gain: null, node: null, mon: null, dest: null, rec: null };
+let engineInUse = 'soniox';
+const opts = store.get('audioOpts', { gain: 1, monitor: false, monVol: 0.8, ns: false, ec: false, agc: false, out: '' });
+$('gain').value = opts.gain; $('gainv').textContent = opts.gain + '×';
+$('monitor').checked = opts.monitor; $('monVol').value = opts.monVol;
+$('optNs').checked = opts.ns; $('optEc').checked = opts.ec; $('optAgc').checked = opts.agc;
+const saveOpts = () => store.set('audioOpts', opts);
+opts.src = opts.src === 'tab' ? 'tab' : 'mic';
+function renderSrc() {
+  $$('#srcSeg button').forEach((b) => b.classList.toggle('on', b.dataset.src === opts.src));
+  $('srcHint').textContent = opts.src === 'tab'
+    ? 'On Start, Chrome asks what to share: choose the YouTube tab and switch on "Share tab audio". Works with Groq, Sarvam and Soniox, not Browser speech.'
+    : 'Uses the microphone chosen below (for example WO Mic).';
+}
+$('srcSeg').onclick = (e) => { const b = e.target.closest('button[data-src]'); if (!b) return; opts.src = b.dataset.src; saveOpts(); renderSrc(); };
+renderSrc();
+
+$('gain').oninput = () => { opts.gain = Number($('gain').value); $('gainv').textContent = opts.gain + '×'; if (audio.gain) audio.gain.gain.value = opts.gain; saveOpts(); };
+$('monitor').onchange = () => { opts.monitor = $('monitor').checked; applyMonitor(); saveOpts(); };
+$('monVol').oninput = () => { opts.monVol = Number($('monVol').value); applyMonitor(); saveOpts(); };
+for (const [id, k] of [['optNs', 'ns'], ['optEc', 'ec'], ['optAgc', 'agc']]) $(id).onchange = () => { opts[k] = $(id).checked; saveOpts(); };
+$('speakerOut').onchange = async () => { opts.out = $('speakerOut').value; saveOpts(); try { await $('monitorEl').setSinkId?.(opts.out); } catch {} };
+
+function applyMonitor() {
+  if (audio.mon) audio.mon.gain.value = opts.monitor ? opts.monVol : 0;
+  const el = $('monitorEl');
+  if (opts.monitor && audio.dest) { if (el.srcObject !== audio.dest.stream) el.srcObject = audio.dest.stream; el.play().catch(() => {}); }
+  else el.pause();
+}
+
+let micMissing = false;
+async function listDevices() {
+  try {
+    const devs = await navigator.mediaDevices.enumerateDevices();
+    const mics = devs.filter((d) => d.kind === 'audioinput'), outs = devs.filter((d) => d.kind === 'audiooutput');
+    const saved = store.get('mic', '');
+    // The chosen input unplugged: keep it selected (marked) rather than silently falling to the laptop's own mic,
+    // which would feed room noise to the backdrop. Listening resumes when it is plugged back in.
+    micMissing = !!saved && mics.length > 0 && !mics.some((d) => d.deviceId === saved);
+    $('mic').innerHTML = (micMissing ? `<option value="${esc(saved)}" selected>⚠ Chosen audio input is UNPLUGGED</option>` : '') +
+      (mics.map((d, i) => `<option value="${d.deviceId}" ${d.deviceId === saved ? 'selected' : ''}>${esc(d.label || 'Microphone ' + (i + 1))}</option>`).join('') || '<option value="">No microphone found</option>');
+    $('speakerOut').innerHTML = outs.length ? outs.map((d, i) => `<option value="${d.deviceId}" ${d.deviceId === opts.out ? 'selected' : ''}>${esc(d.label || 'Output ' + (i + 1))}</option>`).join('') : '<option value="">Default output</option>';
+  } catch {}
+}
+navigator.mediaDevices?.enumerateDevices && listDevices();
+navigator.mediaDevices?.addEventListener?.('devicechange', listDevices);
+$('btnRefreshMics').onclick = listDevices;
+$('mic').onchange = async () => { store.set('mic', $('mic').value); if (audio.stream) { const wasStreaming = listening; await stopMic(); await startMic(wasStreaming); } };
+
+async function startMic(streamToServer) {
+  const id = $('mic').value;
+  if (opts.src === 'tab') {
+    // Chrome asks which tab to share; tick "Share tab audio". We keep only the sound.
+    audio.stream = await navigator.mediaDevices.getDisplayMedia({ video: true, audio: { echoCancellation: false, noiseSuppression: false, autoGainControl: false }, preferCurrentTab: false, selfBrowserSurface: 'exclude', systemAudio: 'include' });
+    audio.stream.getVideoTracks().forEach((t) => t.stop());
+    if (!audio.stream.getAudioTracks().length) { audio.stream.getTracks().forEach((t) => t.stop()); throw new Error('No sound was shared. Pick the YouTube tab and switch on "Share tab audio".'); }
+  } else
+  audio.stream = await navigator.mediaDevices.getUserMedia({ audio: { deviceId: id ? { exact: id } : undefined, channelCount: 1, echoCancellation: opts.ec, noiseSuppression: opts.ns, autoGainControl: opts.agc } });
+  await listDevices();
+  audio.ctx = new AudioContext({ latencyHint: 'interactive' });
+  await audio.ctx.audioWorklet.addModule(URL.createObjectURL(new Blob([WORKLET], { type: 'application/javascript' })));
+  audio.src = audio.ctx.createMediaStreamSource(audio.stream);
+  audio.gain = audio.ctx.createGain(); audio.gain.gain.value = opts.gain;
+  audio.node = new AudioWorkletNode(audio.ctx, 'pcm16k');
+  audio.mon = audio.ctx.createGain();
+  audio.dest = audio.ctx.createMediaStreamDestination();
+  audio.src.connect(audio.gain); audio.gain.connect(audio.node); audio.gain.connect(audio.mon); audio.mon.connect(audio.dest);
+  // AudioWorklet only pulls audio when connected to the graph's output; route it through a muted gain.
+  const sink = audio.ctx.createGain(); sink.gain.value = 0; audio.node.connect(sink); sink.connect(audio.ctx.destination);
+  audio.node.port.onmessage = (e) => {
+    if (streamToServer && engineInUse !== 'browser' && ws && ws.readyState === 1) ws.send(e.data.pcm);
+    const pk = e.data.pk, pct = Math.min(100, Math.round(pk * 110));
+    for (const l of $$('.lvl')) l.style.width = pct + '%';
+    $('db').textContent = pk > 0 ? Math.round(20 * Math.log10(pk)) + ' dB' : '-∞ dB';
+  };
+  try { if (opts.out) await $('monitorEl').setSinkId?.(opts.out); } catch {}
+  applyMonitor();
+  if (audio.ctx.state === 'suspended') await audio.ctx.resume();
+}
+
+async function stopMic() {
+  try { audio.rec && (audio.rec.onend = null, audio.rec.abort()); } catch {}
+  try { audio.node && audio.node.disconnect(); audio.ctx && (await audio.ctx.close()); audio.stream && audio.stream.getTracks().forEach((t) => t.stop()); } catch {}
+  Object.keys(audio).forEach((k) => (audio[k] = null));
+  $('monitorEl').pause();
+  for (const l of $$('.lvl')) l.style.width = '0';
+  $('db').textContent = '— dB';
+}
+
+function startBrowserSpeech() {
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if (!SR) throw new Error('This browser has no built-in speech recognition. Use Chrome or Edge, or switch to Soniox.');
+  const rec = new SR();
+  rec.lang = S.settings.browserLang; rec.continuous = true; rec.interimResults = true; rec.maxAlternatives = 1;
+  rec.onresult = (e) => {
+    let interim = '';
+    for (let i = e.resultIndex; i < e.results.length; i++) {
+      const r = e.results[i];
+      if (r.isFinal) send({ type: 'stt-text', text: r[0].transcript, final: true }); else interim += r[0].transcript;
+    }
+    if (interim) send({ type: 'stt-text', text: interim, final: false });
+  };
+  rec.onerror = (e) => {
+    if (e.error === 'no-speech' || e.error === 'aborted') return;
+    send({ type: 'stt-status', state: e.error === 'not-allowed' ? 'error' : 'reconnecting', msg: 'browser: ' + e.error });
+    if (e.error === 'not-allowed') toast('Microphone permission denied for speech recognition', 'bad');
+    else if (e.error === 'network') toast('Browser speech needs internet (Chrome sends audio to Google). Check the connection.', 'bad');
+    else if (e.error === 'audio-capture') toast('Browser speech found no microphone. Set your mic (e.g. WO Mic) as the Windows default recording device.', 'bad');
+  };
+  rec.onstart = () => send({ type: 'stt-status', state: 'live', msg: 'browser ' + rec.lang });
+  rec.onend = () => { if (listening && audio.rec === rec) setTimeout(() => { try { startRec(rec); } catch {} }, 250); }; // Chrome stops after silence; restart
+  audio.rec = rec;
+  startRec(rec);
+}
+
+// Newer Chrome can listen to a chosen mic track; older versions ignore it or throw and use the Windows default mic.
+function startRec(rec) {
+  const track = audio.stream && audio.stream.getAudioTracks()[0];
+  if (track && track.readyState === 'live') { try { rec.start(track); return; } catch {} }
+  rec.start();
+}
+
+async function startListening() {
+  if (testing) await stopTest();
+  engineInUse = S.settings.sttEngine;
+  const needs = { soniox: 'soniox', groq: 'groq', sarvam: 'sarvam' }[engineInUse];
+  if (needs && !S.keys[needs]) {
+    // No key for this engine: the audio would go nowhere. Use Groq Whisper if possible, else free browser speech.
+    // The saved engine is left alone, so adding the key later is enough.
+    const fallback = S.keys.groq && engineInUse !== 'groq' ? 'groq' : 'browser';
+    toast('No ' + engineInUse + ' key set, so using ' + (fallback === 'groq' ? 'Groq Whisper (slower)' : 'free Browser speech') + ' for now. Add the key in Engines & keys.', 'warn');
+    engineInUse = fallback;
+  }
+  if (opts.src === 'tab' && engineInUse === 'browser') return toast('Browser speech can only hear the microphone. Pick Groq Whisper in Engines to listen to a tab.', 'bad');
+  try {
+    await startMic(true);
+    if (engineInUse === 'browser') startBrowserSpeech();
+  } catch (e) {
+    await stopMic();
+    return toast('Microphone failed: ' + e.message + (location.hostname !== 'localhost' && location.protocol !== 'https:' ? ' — open this page via http://localhost:' + location.port + ' on the laptop with the mic.' : ''), 'bad');
+  }
+  listening = true;
+  send({ type: 'start', engine: engineInUse, label: LABEL });
+  render();
+}
+function stopListeningLocal() { listening = false; stopMic(); }
+$('btnStart').onclick = () => S && startListening();
+$('btnStop').onclick = () => {
+  // Stopping another panel's listening during a talk cuts the speech off: ask first.
+  if (!listening && !confirm('Another panel (' + (S.status?.captureBy || 'another device') + ') is listening. Stop it?')) return;
+  stopListeningLocal(); send({ type: 'stop', force: !listening }); render();
+};
+
+async function stopTest() { testing = false; await stopMic(); $('btnMicTest').textContent = 'Test microphone'; $('micState').textContent = ''; }
+$('btnMicTest').onclick = async () => {
+  if (listening) return toast('Already listening. The meter is live.', 'info');
+  if (testing) return stopTest();
+  try { await startMic(false); testing = true; $('btnMicTest').textContent = 'Stop test'; $('micState').textContent = 'Testing: nothing is sent to recognition.'; }
+  catch (e) { toast('Microphone failed: ' + e.message, 'bad'); }
+};
+
+// If the mic stream dies (unplugged, tab throttled), restart it automatically.
+setInterval(async () => {
+  if (!listening) return;
+  const dead = !audio.stream || audio.stream.getTracks().every((t) => t.readyState === 'ended') || (audio.ctx && audio.ctx.state === 'closed');
+  if (dead && opts.src === 'tab') { stopListeningLocal(); send({ type: 'stop' }); render(); toast('Tab sharing ended, listening stopped', 'warn'); return; }
+  if (dead && micMissing) {
+    toast('AUDIO INPUT UNPLUGGED — plug it back in; listening resumes by itself.', 'bad');
+    send({ type: 'stt-status', state: 'no audio', msg: 'Audio input unplugged' });
+  }
+  if (dead) { try { await stopMic(); await startMic(true); if (engineInUse === 'browser') startBrowserSpeech(); toast('Microphone restarted', 'warn'); } catch {} }
+  else if (audio.ctx && audio.ctx.state === 'suspended') audio.ctx.resume().catch(() => {});
+}, 3000);
+
+let wake; const keepAwake = async () => { try { wake = await navigator.wakeLock.request('screen'); } catch {} };
+keepAwake(); document.addEventListener('visibilitychange', () => { if (document.visibilityState === 'visible') keepAwake(); });
+addEventListener('beforeunload', (e) => { if (listening) { e.preventDefault(); e.returnValue = ''; } });
+</script>
+</body>
+</html>

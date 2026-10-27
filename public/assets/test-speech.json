@@ -1,0 +1,82 @@
+[
+  {
+    "i": 0,
+    "startsAtMs": 1000,
+    "endsAtMs": 5352,
+    "lang": "gu",
+    "text": "જય જિનેન્દ્ર, મંચ પર બિરાજમાન સૌ મહાનુભાવો અને મારા વ્હાલા મિત્રો.",
+    "expect": "nothing (greeting)"
+  },
+  {
+    "i": 1,
+    "startsAtMs": 6952,
+    "endsAtMs": 12499,
+    "lang": "hi",
+    "text": "दोस्तों, कहते हैं कि नदी में पत्थर सालों पड़ा रहे, फिर भी अंदर से नरम नहीं होता।",
+    "expect": "a line about the stone (may wait for the next sentence)"
+  },
+  {
+    "i": 2,
+    "startsAtMs": 13399,
+    "endsAtMs": 17580,
+    "lang": "hi",
+    "text": "वैसे ही जो इंसान सीखना नहीं चाहता, वो कभी नहीं बदलता।",
+    "expect": "completes the stone idea"
+  },
+  {
+    "i": 3,
+    "startsAtMs": 19180,
+    "endsAtMs": 25580,
+    "lang": "en",
+    "text": "When I started my business in 1995, I had just one small shop and two people.",
+    "expect": "maybe nothing yet (setup)"
+  },
+  {
+    "i": 4,
+    "startsAtMs": 27180,
+    "endsAtMs": 32044,
+    "lang": "en",
+    "text": "Today, our group employs more than four thousand people across eleven states.",
+    "expect": "a number line: 4,000 people, 11 states"
+  },
+  {
+    "i": 5,
+    "startsAtMs": 33644,
+    "endsAtMs": 38167,
+    "lang": "gu",
+    "text": "આપણો સમાજ ત્યારે જ આગળ વધે, જ્યારે યુવાનો જવાબદારી લેતા શીખે.",
+    "expect": "Gujarati wording in English letters"
+  },
+  {
+    "i": 6,
+    "startsAtMs": 39767,
+    "endsAtMs": 44204,
+    "lang": "hi",
+    "text": "Business में trust सबसे बड़ा asset है, पैसा तो आता जाता रहता है।",
+    "expect": "Trust sabse bada asset"
+  },
+  {
+    "i": 7,
+    "startsAtMs": 45804,
+    "endsAtMs": 49815,
+    "lang": "gu",
+    "text": "ગયા વર્ષે આપણે પચીસ કરોડ રૂપિયા ફક્ત શિક્ષણ માટે આપ્યા.",
+    "expect": "₹25 crore for education, in Gujarati wording"
+  },
+  {
+    "i": 8,
+    "startsAtMs": 51415,
+    "endsAtMs": 59351,
+    "lang": "en",
+    "text": "So my request to every young person here is simple: start small, stay honest, and never stop learning.",
+    "expect": "the closing call to action"
+  },
+  {
+    "i": 9,
+    "startsAtMs": 60951,
+    "endsAtMs": 62658,
+    "lang": "hi",
+    "text": "धन्यवाद, जय जिनेन्द्र।",
+    "expect": "nothing (thanks)"
+  }
+]
